@@ -307,6 +307,104 @@
   }
   .divider{ height:1px; background:var(--line); border:0; }
 
+  /* ---------- COMPASS EXPAND (scroll-driven hero reveal) ---------- */
+  .compass-expand{
+    position:relative;
+    height:230vh;
+    padding:0;
+    z-index:1;
+  }
+  .ce-sticky{
+    position:sticky;
+    top:0;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    padding:0 24px;
+  }
+  .ce-media{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    width:96px; height:96px;
+    transition:filter 0.4s ease;
+    will-change:width, height;
+  }
+  .ce-media svg{ width:100%; height:100%; display:block; }
+  .ce-media .ce-ring{ animation:spin 90s linear infinite; transform-origin:120px 110px; }
+  .ce-media .ce-star{ animation:pulse 3.4s ease-in-out infinite; transform-origin:center; }
+
+  .ce-text{
+    display:flex;
+    align-items:baseline;
+    gap:0;
+    margin-top:34px;
+    white-space:nowrap;
+  }
+  .ce-word{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:clamp(2.2rem, 6vw, 5rem);
+    letter-spacing:-0.01em;
+    color:var(--parchment);
+    will-change:transform;
+  }
+  .ce-word-left{ text-align:right; }
+  .ce-word-right{ color:var(--gold-bright); font-style:italic; text-align:left; margin-left:0.4ch; }
+
+  .ce-meta{
+    position:absolute;
+    bottom:48px;
+    left:0; right:0;
+    display:flex; justify-content:space-between;
+    padding:0 32px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    transition:opacity 0.4s ease;
+  }
+  .ce-meta .ce-hint{ display:flex; align-items:center; gap:8px; }
+  .ce-meta .ce-hint svg{ width:12px; height:12px; animation:ceBounce 1.6s ease-in-out infinite; }
+  @keyframes ceBounce{ 0%,100%{ transform:translateY(0); opacity:0.5; } 50%{ transform:translateY(5px); opacity:1; } }
+
+  .ce-reveal-content{
+    position:relative;
+    z-index:2;
+    text-align:center;
+    max-width:620px;
+    margin:0 auto;
+    padding:0 32px 140px;
+    opacity:0;
+    transform:translateY(24px);
+    transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .ce-reveal-content.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .ce-reveal-content p{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:clamp(1.3rem, 2.2vw, 1.7rem);
+    color:var(--parchment-dim);
+    line-height:1.5;
+  }
+  .ce-reveal-content span{ color:var(--gold-bright); font-style:normal; }
+
+  @media (max-width:700px){
+    .ce-word{ font-size:clamp(1.6rem, 8vw, 2.6rem); }
+    .ce-meta{ bottom:32px; font-size:0.64rem; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .compass-expand{ height:auto; }
+    .ce-sticky{ position:relative; height:auto; padding:100px 0; }
+    .ce-media{ width:180px !important; height:180px !important; }
+  }
+
   /* ---------- PHILOSOPHY ---------- */
   .philosophy{ background:var(--ink-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .philosophy .wrap{ display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:start; }
@@ -350,67 +448,146 @@
   @media (max-width:860px){ .bearings{ grid-template-columns:1fr; } }
 
   /* ---------- WORK ---------- */
-  .work-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
-  .work-card{
-    background:var(--ink-2);
-    padding:52px 44px;
-    position:relative;
-    overflow:hidden;
-    min-height:220px;
-    display:flex; flex-direction:column; justify-content:space-between;
-    transition:transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
-    z-index:1;
+  /* ---------- WORK: high-tech scrollable gallery ---------- */
+  .work-toolbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:-28px; margin-bottom:36px;
+    font-family:'JetBrains Mono', monospace;
   }
-  .work-card:hover{
-    background:var(--ink-3);
-    transform:translateY(-6px);
-    box-shadow:var(--shadow-hover-card);
+  .work-index{
+    font-size:0.76rem; letter-spacing:0.14em; color:var(--muted);
+  }
+  .work-index #workCurrent{ color:var(--gold-bright); }
+  .work-nav-btns{ display:flex; gap:10px; }
+  .work-nav-btn{
+    width:42px; height:42px;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--parchment-dim);
+    border-radius:50%;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1rem;
+    transition:border-color 0.25s ease, color 0.25s ease, transform 0.2s ease, background 0.25s ease;
+  }
+  .work-nav-btn:hover{ border-color:var(--gold); color:var(--gold-bright); background:rgba(201,162,75,0.08); transform:translateY(-2px); }
+  .work-nav-btn:active{ transform:translateY(0) scale(0.94); }
+  .work-nav-btn:disabled{ opacity:0.3; cursor:default; transform:none; }
+
+  .work-gallery-wrap{ position:relative; }
+  .work-gallery-wrap::before, .work-gallery-wrap::after{
+    content:"";
+    position:absolute; top:0; bottom:26px;
+    width:70px; z-index:2; pointer-events:none;
+  }
+  .work-gallery-wrap::before{ left:0; background:linear-gradient(to right, var(--ink), transparent); }
+  .work-gallery-wrap::after{ right:0; background:linear-gradient(to left, var(--ink), transparent); }
+
+  .work-gallery{
+    display:flex;
+    gap:22px;
+    overflow-x:auto;
+    scroll-snap-type:x proximity;
+    padding:6px 32px 26px;
+    margin:0 -32px;
+    cursor:grab;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .work-gallery.dragging{ cursor:grabbing; scroll-snap-type:none; user-select:none; }
+  .work-gallery::-webkit-scrollbar{ display:none; }
+
+  .work-card{
+    position:relative;
+    flex:0 0 auto;
+    width:min(380px, 78vw);
+    background:
+      radial-gradient(560px circle at var(--mx,50%) var(--my,50%), rgba(201,162,75,0.10), transparent 55%),
+      var(--ink-2);
+    border:1px solid var(--line-strong);
+    padding:34px 30px 28px;
+    overflow:hidden;
+    min-height:300px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    scroll-snap-align:start;
+    transition:transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease, border-color 0.4s ease;
+    z-index:1;
   }
   .work-card::before{
     content:"";
-    position:absolute; top:0; right:0;
-    width:120px; height:120px;
-    background:radial-gradient(circle at top right, rgba(201,162,75,0.14), transparent 70%);
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(201,162,75,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,162,75,0.05) 1px, transparent 1px);
+    background-size:26px 26px;
+    opacity:0;
+    transition:opacity 0.4s ease;
+    pointer-events:none;
   }
-  .work-card .wc-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .work-card::after{
+    content:"";
+    position:absolute; left:0; right:0; top:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    transform:translateY(-3px) scaleX(0);
+    transform-origin:left;
+    transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  .work-card:hover{
+    transform:translateY(-8px);
+    border-color:rgba(201,162,75,0.5);
+    box-shadow:var(--shadow-hover-card), 0 0 0 1px rgba(201,162,75,0.15);
+  }
+  .work-card:hover::before{ opacity:1; }
+  .work-card:hover::after{ transform:translateY(-3px) scaleX(1); }
+
+  /* corner brackets — HUD framing */
+  .wc-corner{ position:absolute; width:16px; height:16px; border:1.5px solid var(--gold); opacity:0; transition:opacity 0.35s ease, transform 0.35s ease; }
+  .wc-corner.tl{ top:10px; left:10px; border-right:0; border-bottom:0; transform:translate(4px,4px); }
+  .wc-corner.tr{ top:10px; right:10px; border-left:0; border-bottom:0; transform:translate(-4px,4px); }
+  .wc-corner.bl{ bottom:10px; left:10px; border-right:0; border-top:0; transform:translate(4px,-4px); }
+  .wc-corner.br{ bottom:10px; right:10px; border-left:0; border-top:0; transform:translate(-4px,-4px); }
+  .work-card:hover .wc-corner{ opacity:1; transform:translate(0,0); }
+
+  .wc-index{
+    position:absolute; top:14px; right:20px;
+    font-family:'JetBrains Mono', monospace; font-size:0.68rem;
+    letter-spacing:0.12em; color:var(--muted);
+  }
+  .work-card .wc-top{ display:flex; flex-direction:column; align-items:flex-start; gap:14px; padding-right:44px; }
   .work-card h3{ font-size:1.7rem; color:var(--parchment); }
   .work-card .tag{
-    font-family:'JetBrains Mono', monospace; font-size:0.68rem;
+    font-family:'JetBrains Mono', monospace; font-size:0.66rem;
     color:var(--gold); border:1px solid rgba(201,162,75,0.4);
     padding:5px 10px; border-radius:20px; letter-spacing:0.06em;
     white-space:nowrap;
     transition:border-color 0.3s ease, color 0.3s ease;
   }
   .work-card:hover .tag{ border-color:var(--gold-bright); color:var(--gold-bright); }
-  .work-card p{ margin-top:18px; color:var(--muted); max-width:380px; }
-  .work-card .wc-bottom{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-top:22px; }
+  .work-card p{ margin-top:16px; color:var(--muted); font-size:0.92rem; }
+  .work-card .wc-bottom{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-top:22px; padding-top:16px; border-top:1px dashed var(--line-strong); }
   .work-card .visit{
     font-family:'JetBrains Mono', monospace; font-size:0.7rem;
     color:var(--gold-bright); letter-spacing:0.05em; white-space:nowrap;
-    border-bottom:1px solid transparent; transition:border-color 0.25s ease;
+    border-bottom:1px solid transparent; transition:border-color 0.25s ease, letter-spacing 0.25s ease;
   }
-  .work-card .visit:hover{ border-color:var(--gold-bright); }
+  .work-card .visit:hover{ border-color:var(--gold-bright); letter-spacing:0.08em; }
 
-  /* client wordmarks — styled to echo each brand's own visual identity */
-  .wm-amberly{
-    font-family:'Fraunces', serif; font-style:italic; font-weight:400;
-    font-size:1.9rem; color:var(--parchment);
+  .work-progress{ height:2px; background:var(--line); margin:0 32px 0; position:relative; overflow:hidden; }
+  .work-progress-bar{ height:100%; width:20%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:2px; transition:width 0.15s ease, transform 0.15s ease; }
+
+  /* client wordmarks — unified typographic style */
+  .work-card .wc-top .brand-name{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:1.6rem;
+    letter-spacing:-0.01em;
+    color:var(--parchment);
   }
-  .wm-amberly em{ color:var(--gold-bright); font-style:italic; }
-  .wm-wave{
-    font-family:'Inter', sans-serif; font-weight:600; font-size:1.5rem;
-    letter-spacing:0.32em; text-transform:uppercase; color:var(--parchment);
+  @media (max-width:700px){
+    .work-toolbar{ margin-top:0; }
+    .work-card{ padding:28px 24px 24px; }
   }
-  .wm-odd{ font-family:'Fraunces', serif; font-weight:500; font-size:1.55rem; color:var(--parchment); }
-  .wm-himalayan{
-    font-family:'Inter', sans-serif; font-weight:600; font-size:1.35rem;
-    letter-spacing:0.06em; text-transform:uppercase; color:var(--parchment);
-  }
-  .wm-whitedot{
-    font-family:'Inter', sans-serif; font-weight:600; font-size:1.3rem;
-    letter-spacing:0.05em; text-transform:uppercase; color:var(--parchment);
-  }
-  @media (max-width:700px){ .work-grid{ grid-template-columns:1fr; } .work-card{ padding:40px 30px; } }
 
   /* ---------- PROCESS ---------- */
   .process{ background:var(--ink-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
@@ -460,11 +637,176 @@
   .footer-brand{ max-width:480px; }
   .footer-tag{ color:var(--parchment-dim); letter-spacing:0.08em; }
   .footer-desc{ margin-top:10px; line-height:1.6; }
+
+  /* ================= ANIMATION LAYER ================= */
+
+  /* --- entrance keyframes --- */
+  @keyframes riseIn{
+    from{ opacity:0; transform:translateY(28px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeScaleIn{
+    from{ opacity:0; transform:scale(0.94); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  @keyframes drawLine{
+    from{ width:0; }
+    to{ width:22px; }
+  }
+  @keyframes shimmerSweep{
+    0%{ background-position:-200% 0; }
+    100%{ background-position:200% 0; }
+  }
+  @keyframes softFloat{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-10px); }
+  }
+  @keyframes glowBreathe{
+    0%,100%{ filter:drop-shadow(0 0 0px rgba(201,162,75,0)); }
+    50%{ filter:drop-shadow(0 0 18px rgba(201,162,75,0.45)); }
+  }
+  @keyframes starTwinkleIn{
+    from{ opacity:0; transform:scale(0.5) rotate(-15deg); }
+    to{ opacity:1; transform:scale(1) rotate(0deg); }
+  }
+  @keyframes underlineGrow{
+    from{ transform:scaleX(0); }
+    to{ transform:scaleX(1); }
+  }
+  @keyframes gradientDrift{
+    0%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+    100%{ background-position:0% 50%; }
+  }
+
+  /* --- eyebrow line draws in --- */
+  .eyebrow::before{ animation:drawLine 0.8s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+  /* --- hero entrance, staggered --- */
+  .hero .eyebrow{ opacity:0; animation:riseIn 0.9s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+  .hero h1{ opacity:0; animation:riseIn 1s cubic-bezier(0.16,1,0.3,1) 0.32s both; }
+  .hero p.lede{ opacity:0; animation:riseIn 1s cubic-bezier(0.16,1,0.3,1) 0.48s both; }
+  .hero .cta-row{ opacity:0; animation:riseIn 1s cubic-bezier(0.16,1,0.3,1) 0.62s both; }
+  .hero .compass-figure{ opacity:0; animation:fadeScaleIn 1.2s cubic-bezier(0.16,1,0.3,1) 0.5s both, softFloat 6s ease-in-out 1.7s infinite; }
+  .hero h1 em{ background:linear-gradient(90deg, var(--gold), var(--gold-bright), var(--gold)); background-size:200% auto; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; animation:gradientDrift 5s ease-in-out infinite; }
+
+  /* --- header entrance --- */
+  header{ animation:riseIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+
+  /* --- compass ring glow accent, layered on existing spin --- */
+  .compass-figure svg .star-pulse{ animation:pulse 3.4s ease-in-out infinite, glowBreathe 3.4s ease-in-out infinite; }
+
+  /* --- scroll reveal system --- */
+  .reveal{
+    opacity:0;
+    transform:translateY(34px);
+    transition:opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    will-change:opacity, transform;
+  }
+  .reveal.in-view{
+    opacity:1;
+    transform:translateY(0);
+  }
+  .reveal-stagger .reveal:nth-child(1){ transition-delay:0.05s; }
+  .reveal-stagger .reveal:nth-child(2){ transition-delay:0.14s; }
+  .reveal-stagger .reveal:nth-child(3){ transition-delay:0.23s; }
+  .reveal-stagger .reveal:nth-child(4){ transition-delay:0.32s; }
+  .reveal-stagger .reveal:nth-child(5){ transition-delay:0.41s; }
+  .reveal-stagger .reveal:nth-child(6){ transition-delay:0.50s; }
+
+  @media (prefers-reduced-motion: reduce){
+    .reveal{ opacity:1 !important; transform:none !important; transition:none !important; }
+    .hero .eyebrow, .hero h1, .hero p.lede, .hero .cta-row, .hero .compass-figure, header{ opacity:1 !important; animation:none !important; }
+  }
+
+  /* --- magnetic / tilt hover polish for cards, layered on existing hover rules --- */
+  .bearing, .work-card{ transform-style:preserve-3d; }
+
+  /* --- button shine sweep --- */
+  .btn-primary{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(90deg, var(--gold) 0%, var(--gold) 40%, var(--gold-bright) 50%, var(--gold) 60%, var(--gold) 100%);
+    background-size:250% 100%;
+    background-position:0% 0;
+  }
+  .btn-primary:hover{ background-position:100% 0; transition:background-position 0.7s ease, transform 0.25s ease; }
+
+  .btn-ghost{ position:relative; overflow:hidden; }
+  .btn-ghost::before{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(201,162,75,0.18), transparent);
+    transform:translateX(-100%);
+    transition:transform 0.6s ease;
+  }
+  .btn-ghost:hover::before{ transform:translateX(100%); }
+
+  /* --- section heading underline flourish --- */
+  .section-head h2{ position:relative; display:inline-block; }
+
+  /* --- contact star gentle spin-in + breathing glow --- */
+  .contact-star{
+    animation:starTwinkleIn 0.9s cubic-bezier(0.34,1.56,0.64,1) both, glowBreathe 3s ease-in-out 0.9s infinite;
+  }
+
+  /* --- nav underline reveal already handled by existing ::after, add smoother easing --- */
+  .navlinks a::after{ transition:width 0.35s cubic-bezier(0.16,1,0.3,1); }
+
+  /* --- philosophy blockquote gold word gentle glow --- */
+  .philosophy blockquote span{
+    background:linear-gradient(90deg, var(--gold), var(--gold-bright), var(--gold));
+    background-size:200% auto;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    animation:gradientDrift 6s ease-in-out infinite;
+  }
+
+  /* --- cursor glow (desktop only, subtle) --- */
+  #cursor-glow{
+    position:fixed;
+    top:0; left:0;
+    width:420px; height:420px;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:2;
+    background:radial-gradient(circle, rgba(201,162,75,0.10), transparent 70%);
+    transform:translate(-50%,-50%);
+    opacity:0;
+    transition:opacity 0.4s ease;
+    will-change:transform;
+  }
+  @media (max-width:860px){ #cursor-glow{ display:none; } }
+
+  /* --- film grain / noise texture overlay --- */
+  #grain{
+    position:fixed;
+    inset:-50px;
+    z-index:3;
+    pointer-events:none;
+    opacity:0.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-repeat:repeat;
+    animation:grainShift 0.5s steps(4) infinite;
+  }
+  @keyframes grainShift{
+    0%{ transform:translate(0,0); }
+    25%{ transform:translate(-2%,-3%); }
+    50%{ transform:translate(-4%,2%); }
+    75%{ transform:translate(2%,-4%); }
+    100%{ transform:translate(0,0); }
+  }
+  .light-theme #grain{ opacity:0.035; mix-blend-mode:multiply; }
+  @media (prefers-reduced-motion: reduce){
+    #grain{ animation:none; }
+  }
 </style>
 </head>
 <body>
 
 <canvas id="stars"></canvas>
+<div id="cursor-glow"></div>
+<div id="grain"></div>
 
 <header>
   <nav class="wrap">
@@ -573,11 +915,45 @@
     </div>
   </section>
 
+  <!-- COMPASS EXPAND (scroll-driven reveal) -->
+  <section class="compass-expand" id="compass-expand">
+    <div class="ce-sticky">
+      <div class="ce-media" id="ceMedia">
+        <svg viewBox="0 0 240 300" fill="none">
+          <g class="ce-ring">
+            <circle cx="120" cy="110" r="85" stroke="var(--line-strong)" stroke-width="1.5"/>
+            <circle cx="120" cy="25" r="2.2" fill="var(--muted)"/>
+            <circle cx="205" cy="110" r="2.2" fill="var(--muted)"/>
+            <circle cx="120" cy="195" r="2.2" fill="var(--muted)"/>
+            <circle cx="35" cy="110" r="2.2" fill="var(--muted)"/>
+          </g>
+          <g class="ce-star">
+            <path d="M120 8 L129 98 L232 110 L129 122 L120 292 L111 122 L8 110 L111 98 Z" fill="var(--gold)"/>
+            <path d="M120 8 L124 98 L120 110 L116 98 Z" fill="var(--gold-bright)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="ce-text">
+        <h2 class="ce-word ce-word-left" id="ceWordLeft">True</h2>
+        <h2 class="ce-word ce-word-right" id="ceWordRight">North.</h2>
+      </div>
+      <div class="ce-meta">
+        <span class="ce-fixed-point">Fixed point — 00°N</span>
+        <span class="ce-hint">Scroll to expand
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </span>
+      </div>
+    </div>
+    <div class="ce-reveal-content" id="ceRevealContent">
+      <p>Everything we design points back to this: <span>one clear direction</span>, held steady — so every touchpoint your brand makes finds its way home.</p>
+    </div>
+  </section>
+
   <!-- PHILOSOPHY -->
   <section class="philosophy">
     <div class="wrap">
-      <blockquote>For as long as ships have sailed, one star has meant the same thing: <span>you are not lost.</span></blockquote>
-      <div class="support">
+      <blockquote class="reveal">For as long as ships have sailed, one star has meant the same thing: <span>you are not lost.</span></blockquote>
+      <div class="support reveal">
         <p>The North One was built on that same idea. Before we design a single logo or write a single caption, we fix a point every part of your brand can design toward — a strategy, a voice, a visual system.</p>
         <p>From there, every touchpoint points the same direction: the site, the socials, the menu on the table, the merch at your next event.</p>
       </div>
@@ -587,32 +963,32 @@
   <!-- SERVICES -->
   <section id="services">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="eyebrow">Where we take you</div>
         <h2>Four bearings, one direction.</h2>
       </div>
     </div>
     <div class="wrap" style="padding:0;">
-      <div class="bearings">
-        <div class="bearing">
+      <div class="bearings reveal-stagger">
+        <div class="bearing reveal">
           <div class="dir">N</div>
           <h3>Identity</h3>
           <p>Logo design and logo redesigns, brand systems and guidelines that hold up from a business card to a billboard.</p>
         </div>
-        <div class="bearing">
+        <div class="bearing reveal">
           <div class="dir">E</div>
           <h3>Digital &amp; Web</h3>
           <p>Websites built to load fast and convert — from single-page menus and landing pages to full e-commerce.</p>
         </div>
-        <div class="bearing">
-          <div class="dir">S</div>
-          <h3>Marketing &amp; Social</h3>
-          <p>Social media design, content calendars, campaign strategy and marketing that keeps the feed on-brand.</p>
-        </div>
-        <div class="bearing">
+        <div class="bearing reveal">
           <div class="dir">W</div>
           <h3>Print &amp; Merch</h3>
           <p>Menus, packaging, event merchandise and signage — the things people actually hold in their hands.</p>
+        </div>
+        <div class="bearing reveal">
+          <div class="dir">S</div>
+          <h3>Marketing &amp; Social</h3>
+          <p>Social media design, content calendars, campaign strategy and marketing that keeps the feed on-brand.</p>
         </div>
       </div>
     </div>
@@ -621,16 +997,25 @@
   <!-- WORK -->
   <section id="work">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="eyebrow">Recent voyages</div>
         <h2>Brands we've charted.</h2>
       </div>
+      <div class="work-toolbar">
+        <span class="work-index"><span id="workCurrent">01</span> / 05 — scroll or drag</span>
+        <div class="work-nav-btns">
+          <button class="work-nav-btn" id="workPrev" aria-label="Previous work">←</button>
+          <button class="work-nav-btn" id="workNext" aria-label="Next work">→</button>
+        </div>
+      </div>
     </div>
-    <div class="wrap" style="padding:0;">
-      <div class="work-grid">
+    <div class="work-gallery-wrap reveal">
+      <div class="work-gallery" id="workGallery">
         <div class="work-card">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">01</span>
           <div class="wc-top">
-            <div class="wm-amberly">Amberly<em>Made</em></div>
+            <div class="brand-name">AmberlyMade</div>
             <span class="tag">Identity · Social · Web</span>
           </div>
           <p>Handcrafted crochet, made with love. Brand identity, social media design and website for a two-person handmade label.</p>
@@ -640,8 +1025,10 @@
           </div>
         </div>
         <div class="work-card">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">02</span>
           <div class="wc-top">
-            <div class="wm-wave">Wave</div>
+            <div class="brand-name">Wave</div>
             <span class="tag">Web · Identity</span>
           </div>
           <p>A virtual library and community platform for deep attention. Website design and digital brand system for the AshaWave initiative.</p>
@@ -651,24 +1038,30 @@
           </div>
         </div>
         <div class="work-card">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">03</span>
           <div class="wc-top">
-            <div class="wm-odd">Odd Fellows Cafe</div>
+            <div class="brand-name">Odd Fellows Cafe</div>
             <span class="tag">Menus · Signage · Web</span>
           </div>
           <p>Menu design, in-store signage, social content and website for an independent neighbourhood cafe.</p>
           <div class="wc-bottom"><span></span><span></span></div>
         </div>
         <div class="work-card">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">04</span>
           <div class="wc-top">
-            <div class="wm-himalayan">Himalayan Granites</div>
+            <div class="brand-name">Himalayan Granites</div>
             <span class="tag">Logo · Collateral · Web</span>
           </div>
           <p>Logo redesign, marketing collateral and website for a stone and surfaces supplier.</p>
           <div class="wc-bottom"><span></span><span></span></div>
         </div>
         <div class="work-card">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">05</span>
           <div class="wc-top">
-            <div class="wm-whitedot">White Dot Design Company</div>
+            <div class="brand-name">White Dot Design Company</div>
             <span class="tag">Interior Design · Web</span>
           </div>
           <p>A boutique interior and spatial design studio offering refined, functional, and emotionally resonant spaces. North One worked on their digital presence and website experience.</p>
@@ -678,33 +1071,34 @@
           </div>
         </div>
       </div>
+      <div class="work-progress"><div class="work-progress-bar" id="workProgressBar"></div></div>
     </div>
   </section>
 
   <!-- PROCESS -->
   <section class="process" id="process">
     <div class="wrap">
-      <div class="section-head" style="margin-bottom:56px;">
+      <div class="section-head reveal" style="margin-bottom:56px;">
         <div class="eyebrow">How we work</div>
         <h2>Four steps to true north.</h2>
       </div>
-      <div class="steps">
-        <div class="step">
+      <div class="steps reveal-stagger">
+        <div class="step reveal">
           <div class="verb">Chart</div>
           <h4>Discovery</h4>
           <p>We audit your brand, your market, and where you actually want to go.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="verb">Plot</div>
           <h4>Strategy</h4>
           <p>We fix the direction — positioning, voice, and the visual identity to carry it.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="verb">Sail</div>
           <h4>Design &amp; Build</h4>
           <p>Logos, sites, campaigns, merch — designed, built, and refined with you.</p>
         </div>
-        <div class="step">
+        <div class="step reveal">
           <div class="verb">Arrive</div>
           <h4>Launch &amp; Grow</h4>
           <p>We ship it, measure it, and keep adjusting course as the brand grows.</p>
@@ -719,21 +1113,21 @@
       <svg class="contact-star" viewBox="0 0 100 100" fill="none">
         <path d="M50 15 L56 44 L85 50 L56 56 L50 85 L44 56 L15 50 L44 44 Z" fill="var(--gold)"/>
       </svg>
-      <div class="eyebrow" style="justify-content:center;">Get in touch</div>
-      <h2>Ready to find<br>your direction?</h2>
-      <p class="lede">Tell us about your brand, and where you want it to go. We'll take it from there.</p>
-      <div class="contact-grid">
+      <div class="eyebrow reveal" style="justify-content:center;">Get in touch</div>
+      <h2 class="reveal">Ready to find<br>your direction?</h2>
+      <p class="lede reveal">Tell us about your brand, and where you want it to go. We'll take it from there.</p>
+      <div class="contact-grid reveal-stagger">
         <!-- Email -->
-        <a href="mailto:northone07@gmail.com" class="btn btn-primary" style="justify-content: center;">NORTHONE07@GMAIL.COM</a>
+        <a href="mailto:northone07@gmail.com" class="btn btn-primary reveal" style="justify-content: center;">NORTHONE07@GMAIL.COM</a>
         
         <!-- Phone -->
-        <a href="tel:+919000099356" aria-label="Call The North One" class="btn btn-primary" style="justify-content: center;">+91 90000 99356</a>
+        <a href="tel:+919000099356" aria-label="Call The North One" class="btn btn-primary reveal" style="justify-content: center;">+91 90000 99356</a>
 
         <!-- Instagram -->
-        <a href="https://www.instagram.com/northoneagency/" target="_blank" rel="noopener noreferrer" aria-label="The North One Instagram" class="btn btn-primary" style="justify-content: center;">@NORTHONEAGENCY</a>
+        <a href="https://www.instagram.com/northoneagency/" target="_blank" rel="noopener noreferrer" aria-label="The North One Instagram" class="btn btn-primary reveal" style="justify-content: center;">@NORTHONEAGENCY</a>
 
         <!-- LinkedIn -->
-        <a href="https://www.linkedin.com/company/the-north-one/" target="_blank" rel="noopener noreferrer" aria-label="The North One LinkedIn" class="btn btn-primary" style="justify-content: center;">THE NORTH ONE</a>
+        <a href="https://www.linkedin.com/company/the-north-one/" target="_blank" rel="noopener noreferrer" aria-label="The North One LinkedIn" class="btn btn-primary reveal" style="justify-content: center;">THE NORTH ONE</a>
       </div>
     </div>
   </section>
@@ -836,6 +1230,213 @@
       updateThemeSettings();
     });
   }
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  if (revealEls.length) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    revealEls.forEach(el => revealObserver.observe(el));
+  }
+
+  // Cursor glow (desktop, pointer-fine only)
+  const cursorGlow = document.getElementById('cursor-glow');
+  if (cursorGlow && window.matchMedia('(pointer: fine)').matches) {
+    let glowX = window.innerWidth / 2, glowY = window.innerHeight / 2;
+    let curX = glowX, curY = glowY;
+    let glowActive = false;
+    window.addEventListener('mousemove', (e) => {
+      glowX = e.clientX; glowY = e.clientY;
+      if (!glowActive) { cursorGlow.style.opacity = '1'; glowActive = true; }
+    });
+    document.addEventListener('mouseleave', () => { cursorGlow.style.opacity = '0'; glowActive = false; });
+    function animateGlow(){
+      curX += (glowX - curX) * 0.12;
+      curY += (glowY - curY) * 0.12;
+      cursorGlow.style.transform = `translate(${curX}px, ${curY}px) translate(-50%, -50%)`;
+      requestAnimationFrame(animateGlow);
+    }
+    animateGlow();
+  }
+
+  // Subtle tilt on bearing cards
+  const tiltCards = document.querySelectorAll('.bearing');
+  if (window.matchMedia('(pointer: fine)').matches) {
+    tiltCards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        card.style.transform = `translateY(-6px) rotateX(${(-py * 5).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+    });
+  }
+
+  // COMPASS EXPAND — scroll-linked pinned reveal
+  (function(){
+    const section = document.getElementById('compass-expand');
+    if (!section) return;
+    const media = document.getElementById('ceMedia');
+    const wordLeft = document.getElementById('ceWordLeft');
+    const wordRight = document.getElementById('ceWordRight');
+    const revealContent = document.getElementById('ceRevealContent');
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      media.style.width = '180px';
+      media.style.height = '180px';
+      revealContent.classList.add('in-view');
+      return;
+    }
+
+    function isMobile(){ return window.innerWidth < 768; }
+
+    // Measure natural (untransformed) word widths and compute the max horizontal
+    // shift each word can take while staying fully inside the viewport.
+    let maxShift = 0;
+    function recomputeShiftBounds(){
+      wordLeft.style.transform = 'none';
+      wordRight.style.transform = 'none';
+      const leftRect = wordLeft.getBoundingClientRect();
+      const rightRect = wordRight.getBoundingClientRect();
+      const viewportW = window.innerWidth;
+      const padding = isMobile() ? 18 : 40;
+
+      const leftRoom = leftRect.left - padding;              // space before left word
+      const rightRoom = viewportW - rightRect.right - padding; // space after right word
+      maxShift = Math.max(0, Math.min(leftRoom, rightRoom));
+    }
+
+    function update(){
+      const rect = section.getBoundingClientRect();
+      const scrollable = rect.height - window.innerHeight;
+      let progress = scrollable > 0 ? (-rect.top) / scrollable : 0;
+      progress = Math.max(0, Math.min(1, progress));
+
+      const base = 96;
+      const maxGrow = isMobile() ? 220 : 460;
+      const size = base + progress * maxGrow;
+      media.style.width = size + 'px';
+      media.style.height = size + 'px';
+
+      const shift = progress * maxShift;
+      wordLeft.style.transform = `translateX(${-shift}px)`;
+      wordRight.style.transform = `translateX(${shift}px)`;
+
+      if (progress > 0.92) {
+        revealContent.classList.add('in-view');
+      } else if (progress < 0.7) {
+        revealContent.classList.remove('in-view');
+      }
+    }
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }, { passive: true });
+    window.addEventListener('resize', () => { recomputeShiftBounds(); update(); });
+
+    recomputeShiftBounds();
+    update();
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { recomputeShiftBounds(); update(); });
+    }
+  })();
+
+  // WORK gallery — spotlight, drag-to-scroll, wheel, nav buttons, progress, index
+  (function(){
+    const gallery = document.getElementById('workGallery');
+    if (!gallery) return;
+    const cards = Array.from(gallery.querySelectorAll('.work-card'));
+    const progressBar = document.getElementById('workProgressBar');
+    const currentEl = document.getElementById('workCurrent');
+    const prevBtn = document.getElementById('workPrev');
+    const nextBtn = document.getElementById('workNext');
+    const total = cards.length;
+
+    // Spotlight follows cursor per card
+    if (window.matchMedia('(pointer: fine)').matches) {
+      cards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+          const rect = card.getBoundingClientRect();
+          const mx = ((e.clientX - rect.left) / rect.width) * 100;
+          const my = ((e.clientY - rect.top) / rect.height) * 100;
+          card.style.setProperty('--mx', mx + '%');
+          card.style.setProperty('--my', my + '%');
+        });
+      });
+    }
+
+    function cardStep(){
+      return (cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : cards[0].offsetWidth + 22);
+    }
+
+    function updateProgress(){
+      const maxScroll = gallery.scrollWidth - gallery.clientWidth;
+      const pct = maxScroll > 0 ? (gallery.scrollLeft / maxScroll) * 100 : 0;
+      progressBar.style.width = Math.max(6, Math.min(100, pct === 0 ? (100/total) : pct)) + '%';
+
+      // determine current card index by nearest offset
+      let idx = 0, minDist = Infinity;
+      cards.forEach((c, i) => {
+        const dist = Math.abs(c.offsetLeft - gallery.scrollLeft);
+        if (dist < minDist) { minDist = dist; idx = i; }
+      });
+      currentEl.textContent = String(idx + 1).padStart(2, '0');
+      prevBtn.disabled = gallery.scrollLeft <= 4;
+      nextBtn.disabled = gallery.scrollLeft >= gallery.scrollWidth - gallery.clientWidth - 4;
+    }
+
+    gallery.addEventListener('scroll', () => {
+      window.requestAnimationFrame(updateProgress);
+    }, { passive: true });
+
+    // Wheel: convert vertical scroll to horizontal when hovering gallery
+    gallery.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        gallery.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Drag to scroll (mouse)
+    let isDown = false, startX = 0, startScroll = 0;
+    gallery.addEventListener('mousedown', (e) => {
+      isDown = true;
+      gallery.classList.add('dragging');
+      startX = e.pageX;
+      startScroll = gallery.scrollLeft;
+    });
+    window.addEventListener('mouseup', () => {
+      isDown = false;
+      gallery.classList.remove('dragging');
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      gallery.scrollLeft = startScroll - (e.pageX - startX);
+    });
+
+    // Nav buttons
+    prevBtn.addEventListener('click', () => { gallery.scrollBy({ left: -cardStep(), behavior: 'smooth' }); });
+    nextBtn.addEventListener('click', () => { gallery.scrollBy({ left: cardStep(), behavior: 'smooth' }); });
+
+    updateProgress();
+    window.addEventListener('resize', updateProgress);
+  })();
 </script>
 
 </body>
