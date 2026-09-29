@@ -114,7 +114,7 @@
     border-radius:2px;
   }
 
-  /* ---------- STARFIELD (signature background) ---------- */
+  /* ---------- STARFIELD (signature background) ------- */
   #stars{
     position:fixed; inset:0;
     z-index:0;
@@ -405,7 +405,7 @@
     .ce-media{ width:180px !important; height:180px !important; }
   }
 
-  /* ---------- PHILOSOPHY ---------- */
+  /* ---------- PHILOSOPHY ------------ */
   .philosophy{ background:var(--ink-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .philosophy .wrap{ display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:start; }
   .philosophy blockquote{
@@ -447,56 +447,59 @@
   .bearing p{ margin-top:14px; color:var(--muted); font-size:0.94rem; }
   @media (max-width:860px){ .bearings{ grid-template-columns:1fr; } }
 
-  /* ---------- WORK ---------- */
-  /* ---------- WORK: high-tech scrollable gallery ---------- */
-  .work-toolbar{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-top:-28px; margin-bottom:36px;
-    font-family:'JetBrains Mono', monospace;
+  /* ---------- WORK: infinite horizontal orbit ---------- */
+
+  /* Orbit wrapper: clips overflow and anchors the edge vignettes */
+  .work-orbit-wrap{
+    position:relative;
+    overflow:hidden;
+    /* Vignette fade on both edges */
+    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    mask-image:linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
   }
-  .work-index{
-    font-size:0.76rem; letter-spacing:0.14em; color:var(--muted);
+
+  /* The moving track — JS drives translateX directly, no CSS animation */
+  .work-orbit-track{
+    display:flex;
+    gap:22px;
+    width:max-content;
+    padding:12px 0 28px;
+    will-change:transform;
+    /* no CSS transition — JS writes transform every rAF frame */
   }
-  .work-index #workCurrent{ color:var(--gold-bright); }
-  .work-nav-btns{ display:flex; gap:10px; }
-  .work-nav-btn{
-    width:42px; height:42px;
+
+  /* ── Orbit navigation arrows ── */
+  .orbit-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:10;
+    width:44px; height:44px;
     border:1px solid var(--line-strong);
-    background:transparent;
+    background:var(--ink-2);
     color:var(--parchment-dim);
     border-radius:50%;
     cursor:pointer;
     display:flex; align-items:center; justify-content:center;
     font-size:1rem;
-    transition:border-color 0.25s ease, color 0.25s ease, transform 0.2s ease, background 0.25s ease;
+    font-family:'JetBrains Mono', monospace;
+    transition:border-color 0.25s ease, color 0.25s ease,
+               background 0.25s ease, transform 0.2s ease,
+               opacity 0.25s ease;
+    opacity:0.55;
   }
-  .work-nav-btn:hover{ border-color:var(--gold); color:var(--gold-bright); background:rgba(201,162,75,0.08); transform:translateY(-2px); }
-  .work-nav-btn:active{ transform:translateY(0) scale(0.94); }
-  .work-nav-btn:disabled{ opacity:0.3; cursor:default; transform:none; }
-
-  .work-gallery-wrap{ position:relative; }
-  .work-gallery-wrap::before, .work-gallery-wrap::after{
-    content:"";
-    position:absolute; top:0; bottom:26px;
-    width:70px; z-index:2; pointer-events:none;
+  .orbit-nav:hover{
+    border-color:var(--gold);
+    color:var(--gold-bright);
+    background:rgba(201,162,75,0.10);
+    opacity:1;
+    transform:translateY(-50%) scale(1.08);
   }
-  .work-gallery-wrap::before{ left:0; background:linear-gradient(to right, var(--ink), transparent); }
-  .work-gallery-wrap::after{ right:0; background:linear-gradient(to left, var(--ink), transparent); }
+  .orbit-nav:active{ transform:translateY(-50%) scale(0.94); }
+  .orbit-prev{ left:14px; }
+  .orbit-next{ right:14px; }
 
-  .work-gallery{
-    display:flex;
-    gap:22px;
-    overflow-x:auto;
-    scroll-snap-type:x proximity;
-    padding:6px 32px 26px;
-    margin:0 -32px;
-    cursor:grab;
-    scrollbar-width:none;
-    -ms-overflow-style:none;
-  }
-  .work-gallery.dragging{ cursor:grabbing; scroll-snap-type:none; user-select:none; }
-  .work-gallery::-webkit-scrollbar{ display:none; }
-
+  /* Card — unchanged visual design, just remove scroll-snap */
   .work-card{
     position:relative;
     flex:0 0 auto;
@@ -509,8 +512,16 @@
     overflow:hidden;
     min-height:300px;
     display:flex; flex-direction:column; justify-content:space-between;
-    scroll-snap-align:start;
-    transition:transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease, border-color 0.4s ease;
+    /* depth effect driven by JS via CSS custom properties */
+    transform: scale(var(--orbit-scale, 1));
+    opacity: var(--orbit-opacity, 1);
+    filter: brightness(var(--orbit-bright, 1));
+    transition:
+      transform 0.45s cubic-bezier(0.16,1,0.3,1),
+      box-shadow 0.4s ease,
+      border-color 0.4s ease,
+      opacity 0.45s ease,
+      filter 0.45s ease;
     z-index:1;
   }
   .work-card::before{
@@ -534,9 +545,11 @@
     transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);
   }
   .work-card:hover{
-    transform:translateY(-8px);
+    transform: scale(1.03) translateY(-8px) !important;
     border-color:rgba(201,162,75,0.5);
     box-shadow:var(--shadow-hover-card), 0 0 0 1px rgba(201,162,75,0.15);
+    opacity: 1 !important;
+    filter: brightness(1.08) !important;
   }
   .work-card:hover::before{ opacity:1; }
   .work-card:hover::after{ transform:translateY(-3px) scaleX(1); }
@@ -573,9 +586,6 @@
   }
   .work-card .visit:hover{ border-color:var(--gold-bright); letter-spacing:0.08em; }
 
-  .work-progress{ height:2px; background:var(--line); margin:0 32px 0; position:relative; overflow:hidden; }
-  .work-progress-bar{ height:100%; width:20%; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius:2px; transition:width 0.15s ease, transform 0.15s ease; }
-
   /* client wordmarks — unified typographic style */
   .work-card .wc-top .brand-name{
     font-family:'Fraunces', serif;
@@ -585,7 +595,6 @@
     color:var(--parchment);
   }
   @media (max-width:700px){
-    .work-toolbar{ margin-top:0; }
     .work-card{ padding:28px 24px 24px; }
   }
 
@@ -1001,17 +1010,15 @@
         <div class="eyebrow">Recent voyages</div>
         <h2>Brands we've charted.</h2>
       </div>
-      <div class="work-toolbar">
-        <span class="work-index"><span id="workCurrent">01</span> / 05 — scroll or drag</span>
-        <div class="work-nav-btns">
-          <button class="work-nav-btn" id="workPrev" aria-label="Previous work">←</button>
-          <button class="work-nav-btn" id="workNext" aria-label="Next work">→</button>
-        </div>
-      </div>
     </div>
-    <div class="work-gallery-wrap reveal">
-      <div class="work-gallery" id="workGallery">
-        <div class="work-card">
+    <!-- Infinite orbit marquee -->
+    <div class="work-orbit-wrap reveal" id="workOrbitWrap">
+      <!-- Nav arrows -->
+      <button class="orbit-nav orbit-prev" id="orbitPrev" aria-label="Previous project" tabindex="0">&#8592;</button>
+      <button class="orbit-nav orbit-next" id="orbitNext" aria-label="Next project" tabindex="0">&#8594;</button>
+      <div class="work-orbit-track" id="workOrbitTrack" aria-label="Project portfolio, continuous loop">
+        <!-- Set A (originals) -->
+        <div class="work-card" data-orbit-set="a">
           <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
           <span class="wc-index">01</span>
           <div class="wc-top">
@@ -1024,7 +1031,7 @@
             <a href="https://amberlymade.vercel.app/" target="_blank" rel="noopener" class="visit">View site ↗</a>
           </div>
         </div>
-        <div class="work-card">
+        <div class="work-card" data-orbit-set="a">
           <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
           <span class="wc-index">02</span>
           <div class="wc-top">
@@ -1037,29 +1044,9 @@
             <a href="https://ashawave.org/" target="_blank" rel="noopener" class="visit">View site ↗</a>
           </div>
         </div>
-        <div class="work-card">
+        <div class="work-card" data-orbit-set="a">
           <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
           <span class="wc-index">03</span>
-          <div class="wc-top">
-            <div class="brand-name">Odd Fellows Cafe</div>
-            <span class="tag">Menus · Signage · Web</span>
-          </div>
-          <p>Menu design, in-store signage, social content and website for an independent neighbourhood cafe.</p>
-          <div class="wc-bottom"><span></span><span></span></div>
-        </div>
-        <div class="work-card">
-          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
-          <span class="wc-index">04</span>
-          <div class="wc-top">
-            <div class="brand-name">Himalayan Granites</div>
-            <span class="tag">Logo · Collateral · Web</span>
-          </div>
-          <p>Logo redesign, marketing collateral and website for a stone and surfaces supplier.</p>
-          <div class="wc-bottom"><span></span><span></span></div>
-        </div>
-        <div class="work-card">
-          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
-          <span class="wc-index">05</span>
           <div class="wc-top">
             <div class="brand-name">White Dot Design Company</div>
             <span class="tag">Interior Design · Web</span>
@@ -1070,8 +1057,87 @@
             <a href="https://whitedotdesigns.com/" target="_blank" rel="noopener noreferrer" class="visit">View site ↗</a>
           </div>
         </div>
+        <div class="work-card" data-orbit-set="a">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">04</span>
+          <div class="wc-top">
+            <div class="brand-name">Odd Fellows Cafe</div>
+            <span class="tag">Menus · Signage · Web</span>
+          </div>
+          <p>Menu design, in-store signage, social content and website for an independent neighbourhood cafe.</p>
+          <div class="wc-bottom"><span></span><span></span></div>
+        </div>
+        <div class="work-card" data-orbit-set="a">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">05</span>
+          <div class="wc-top">
+            <div class="brand-name">Himalayan Granites</div>
+            <span class="tag">Logo · Collateral · Web</span>
+          </div>
+          <p>Logo redesign, marketing collateral and website for a stone and surfaces supplier.</p>
+          <div class="wc-bottom"><span></span><span></span></div>
+        </div>
+        <!-- Set B (duplicates for seamless loop) -->
+        <div class="work-card" data-orbit-set="b" aria-hidden="true">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">01</span>
+          <div class="wc-top">
+            <div class="brand-name">AmberlyMade</div>
+            <span class="tag">Identity · Social · Web</span>
+          </div>
+          <p>Handcrafted crochet, made with love. Brand identity, social media design and website for a two-person handmade label.</p>
+          <div class="wc-bottom">
+            <span></span>
+            <a href="https://amberlymade.vercel.app/" target="_blank" rel="noopener" class="visit" tabindex="-1">View site ↗</a>
+          </div>
+        </div>
+        <div class="work-card" data-orbit-set="b" aria-hidden="true">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">02</span>
+          <div class="wc-top">
+            <div class="brand-name">Wave</div>
+            <span class="tag">Web · Identity</span>
+          </div>
+          <p>A virtual library and community platform for deep attention. Website design and digital brand system for the AshaWave initiative.</p>
+          <div class="wc-bottom">
+            <span></span>
+            <a href="https://ashawave.org/" target="_blank" rel="noopener" class="visit" tabindex="-1">View site ↗</a>
+          </div>
+        </div>
+        <div class="work-card" data-orbit-set="b" aria-hidden="true">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">03</span>
+          <div class="wc-top">
+            <div class="brand-name">White Dot Design Company</div>
+            <span class="tag">Interior Design · Web</span>
+          </div>
+          <p>A boutique interior and spatial design studio offering refined, functional, and emotionally resonant spaces. North One worked on their digital presence and website experience.</p>
+          <div class="wc-bottom">
+            <span></span>
+            <a href="https://whitedotdesigns.com/" target="_blank" rel="noopener noreferrer" class="visit" tabindex="-1">View site ↗</a>
+          </div>
+        </div>
+        <div class="work-card" data-orbit-set="b" aria-hidden="true">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">04</span>
+          <div class="wc-top">
+            <div class="brand-name">Odd Fellows Cafe</div>
+            <span class="tag">Menus · Signage · Web</span>
+          </div>
+          <p>Menu design, in-store signage, social content and website for an independent neighbourhood cafe.</p>
+          <div class="wc-bottom"><span></span><span></span></div>
+        </div>
+        <div class="work-card" data-orbit-set="b" aria-hidden="true">
+          <div class="wc-corner tl"></div><div class="wc-corner tr"></div><div class="wc-corner bl"></div><div class="wc-corner br"></div>
+          <span class="wc-index">05</span>
+          <div class="wc-top">
+            <div class="brand-name">Himalayan Granites</div>
+            <span class="tag">Logo · Collateral · Web</span>
+          </div>
+          <p>Logo redesign, marketing collateral and website for a stone and surfaces supplier.</p>
+          <div class="wc-bottom"><span></span><span></span></div>
+        </div>
       </div>
-      <div class="work-progress"><div class="work-progress-bar" id="workProgressBar"></div></div>
     </div>
   </section>
 
@@ -1356,86 +1422,171 @@
     }
   })();
 
-  // WORK gallery — spotlight, drag-to-scroll, wheel, nav buttons, progress, index
+  // WORK — JS-driven infinite orbit: autoplay + drag + touch + arrow nav
   (function(){
-    const gallery = document.getElementById('workGallery');
-    if (!gallery) return;
-    const cards = Array.from(gallery.querySelectorAll('.work-card'));
-    const progressBar = document.getElementById('workProgressBar');
-    const currentEl = document.getElementById('workCurrent');
-    const prevBtn = document.getElementById('workPrev');
-    const nextBtn = document.getElementById('workNext');
-    const total = cards.length;
+    const wrap     = document.getElementById('workOrbitWrap');
+    const track    = document.getElementById('workOrbitTrack');
+    const prevBtn  = document.getElementById('orbitPrev');
+    const nextBtn  = document.getElementById('orbitNext');
+    if (!wrap || !track) return;
 
-    // Spotlight follows cursor per card
+    const GAP        = 22;          // must match CSS gap value
+    const SPEED      = 0.55;        // px per animation frame (autoplay)
+    const RESUME_MS  = 1800;        // ms after interaction before autoplay resumes
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Measure loop width: width of exactly one set of 5 cards ─────────
+    // Set A cards are `data-orbit-set="a"`, Set B are `data-orbit-set="b"`.
+    // Loop point = total width of Set A + one gap (the gap between A-last and B-first).
+    const allCards   = Array.from(track.querySelectorAll('.work-card'));
+    const setACards  = allCards.filter(c => c.dataset.orbitSet === 'a');
+
+    let loopWidth = 0; // set after fonts/layout settle
+    function measureLoop() {
+      // Sum actual rendered widths of set-A cards + gaps between them + trailing gap
+      loopWidth = setACards.reduce((sum, c) => sum + c.offsetWidth + GAP, 0);
+    }
+
+    // Card step for arrow navigation = first set-A card width + gap
+    function cardStep() {
+      return (setACards[0] ? setACards[0].offsetWidth + GAP : 400);
+    }
+
+    // ── Core state ───────────────────────────────────────────────────────
+    let offset      = 0;     // pixels scrolled left (wraps at loopWidth)
+    let autoplay    = true;  // whether autoplay is active
+    let resumeTimer = null;
+    let rafId       = null;
+
+    // ── Apply offset to DOM ───────────────────────────────────────────────
+    function applyOffset() {
+      // Wrap to keep offset in [0, loopWidth)
+      if (loopWidth > 0) {
+        offset = ((offset % loopWidth) + loopWidth) % loopWidth;
+      }
+      track.style.transform = `translateX(${-offset}px)`;
+    }
+
+    // ── Depth effect: per-card scale/brightness from viewport centre ─────
+    function applyDepth() {
+      if (reduceMotion) return;
+      const vCenter = window.innerWidth / 2;
+      allCards.forEach(card => {
+        if (card.matches(':hover')) return; // let hover CSS rule dominate
+        const r = card.getBoundingClientRect();
+        const dist    = Math.abs((r.left + r.width / 2) - vCenter) / (window.innerWidth * 0.55);
+        const clamped = Math.min(dist, 1);
+        card.style.setProperty('--orbit-scale',   (1 - clamped * 0.10).toFixed(4));
+        card.style.setProperty('--orbit-bright',  (1 - clamped * 0.28).toFixed(4));
+        card.style.setProperty('--orbit-opacity', (1 - clamped * 0.45).toFixed(4));
+      });
+    }
+
+    // ── Main rAF loop ─────────────────────────────────────────────────────
+    function tick() {
+      if (autoplay && !isDragging) {
+        offset += SPEED;
+      }
+      applyOffset();
+      applyDepth();
+      rafId = requestAnimationFrame(tick);
+    }
+
+    // ── Pause / resume helpers ────────────────────────────────────────────
+    function pauseAutoplay() {
+      autoplay = false;
+      clearTimeout(resumeTimer);
+    }
+    function scheduleResume() {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => { autoplay = true; }, RESUME_MS);
+    }
+
+    // ── Mouse drag ───────────────────────────────────────────────────────
+    let isDragging  = false;
+    let dragStartX  = 0;
+    let dragStartOff = 0;
+    let lastDragX   = 0;
+    let velocity    = 0;
+
+    wrap.addEventListener('mousedown', e => {
+      // Don't initiate drag when clicking buttons or links inside the track
+      if (e.target.closest('button, a')) return;
+      isDragging   = true;
+      dragStartX   = e.clientX;
+      dragStartOff = offset;
+      lastDragX    = e.clientX;
+      velocity     = 0;
+      pauseAutoplay();
+      wrap.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      velocity = lastDragX - e.clientX;
+      lastDragX = e.clientX;
+      offset = dragStartOff + (dragStartX - e.clientX);
+      applyOffset();
+    });
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      wrap.style.cursor = '';
+      scheduleResume();
+    });
+
+    // ── Touch swipe ──────────────────────────────────────────────────────
+    let touchStartX  = 0;
+    let touchStartOff = 0;
+    wrap.addEventListener('touchstart', e => {
+      touchStartX   = e.touches[0].clientX;
+      touchStartOff = offset;
+      pauseAutoplay();
+    }, { passive: true });
+    wrap.addEventListener('touchmove', e => {
+      offset = touchStartOff + (touchStartX - e.touches[0].clientX);
+      applyOffset();
+    }, { passive: true });
+    wrap.addEventListener('touchend', () => {
+      scheduleResume();
+    }, { passive: true });
+
+    // ── Arrow navigation ─────────────────────────────────────────────────
+    function jumpBy(delta) {
+      pauseAutoplay();
+      offset += delta;
+      applyOffset();
+      scheduleResume();
+    }
+    if (prevBtn) prevBtn.addEventListener('click', () => jumpBy(-cardStep()));
+    if (nextBtn) nextBtn.addEventListener('click', () => jumpBy( cardStep()));
+
+    // ── Spotlight radial follows cursor per card ──────────────────────────
     if (window.matchMedia('(pointer: fine)').matches) {
-      cards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-          const rect = card.getBoundingClientRect();
-          const mx = ((e.clientX - rect.left) / rect.width) * 100;
-          const my = ((e.clientY - rect.top) / rect.height) * 100;
-          card.style.setProperty('--mx', mx + '%');
-          card.style.setProperty('--my', my + '%');
+      allCards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const r  = card.getBoundingClientRect();
+          card.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+          card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
         });
       });
     }
 
-    function cardStep(){
-      return (cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : cards[0].offsetWidth + 22);
+    // ── Cursor style on wrap ──────────────────────────────────────────────
+    wrap.style.cursor = 'grab';
+
+    // ── Boot ─────────────────────────────────────────────────────────────
+    // Measure after fonts are ready for accurate card widths
+    function init() {
+      measureLoop();
+      window.addEventListener('resize', measureLoop);
+      rafId = requestAnimationFrame(tick);
     }
-
-    function updateProgress(){
-      const maxScroll = gallery.scrollWidth - gallery.clientWidth;
-      const pct = maxScroll > 0 ? (gallery.scrollLeft / maxScroll) * 100 : 0;
-      progressBar.style.width = Math.max(6, Math.min(100, pct === 0 ? (100/total) : pct)) + '%';
-
-      // determine current card index by nearest offset
-      let idx = 0, minDist = Infinity;
-      cards.forEach((c, i) => {
-        const dist = Math.abs(c.offsetLeft - gallery.scrollLeft);
-        if (dist < minDist) { minDist = dist; idx = i; }
-      });
-      currentEl.textContent = String(idx + 1).padStart(2, '0');
-      prevBtn.disabled = gallery.scrollLeft <= 4;
-      nextBtn.disabled = gallery.scrollLeft >= gallery.scrollWidth - gallery.clientWidth - 4;
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(init);
+    } else {
+      init();
     }
-
-    gallery.addEventListener('scroll', () => {
-      window.requestAnimationFrame(updateProgress);
-    }, { passive: true });
-
-    // Wheel: convert vertical scroll to horizontal when hovering gallery
-    gallery.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        gallery.scrollLeft += e.deltaY;
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    // Drag to scroll (mouse)
-    let isDown = false, startX = 0, startScroll = 0;
-    gallery.addEventListener('mousedown', (e) => {
-      isDown = true;
-      gallery.classList.add('dragging');
-      startX = e.pageX;
-      startScroll = gallery.scrollLeft;
-    });
-    window.addEventListener('mouseup', () => {
-      isDown = false;
-      gallery.classList.remove('dragging');
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      gallery.scrollLeft = startScroll - (e.pageX - startX);
-    });
-
-    // Nav buttons
-    prevBtn.addEventListener('click', () => { gallery.scrollBy({ left: -cardStep(), behavior: 'smooth' }); });
-    nextBtn.addEventListener('click', () => { gallery.scrollBy({ left: cardStep(), behavior: 'smooth' }); });
-
-    updateProgress();
-    window.addEventListener('resize', updateProgress);
   })();
 </script>
 </body>
