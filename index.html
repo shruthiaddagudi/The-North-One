@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/chatbot.css">
 <script>
   (function() {
     const savedTheme = localStorage.getItem('theme');
@@ -1589,5 +1590,134 @@
     }
   })();
 </script>
+<!-- ==========================================================================
+     THE NORTH ONE — AI Chatbot Interface (Stage 1)
+     ========================================================================== -->
+
+<!-- Floating Chatbot Launcher Button -->
+<button id="tnoChatbotLauncher" 
+        class="tno-chatbot-launcher" 
+        aria-label="Open North One AI Chat" 
+        aria-expanded="false" 
+        aria-controls="tnoChatWindow" 
+        type="button">
+  <span class="tno-launcher-tooltip">Chat with North One</span>
+  <span class="tno-launcher-badge" id="tnoLauncherBadge" aria-label="1 new message">1</span>
+  <span class="tno-launcher-icon tno-launcher-icon-chat" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 2 L13.5 9.5 L21 11 L13.5 12.5 L12 20 L10.5 12.5 L3 11 L10.5 9.5 Z" fill="var(--gold)"/>
+    </svg>
+  </span>
+  <span class="tno-launcher-icon tno-launcher-icon-close" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </span>
+</button>
+
+<!-- Modern Chat Window Dialog -->
+<aside id="tnoChatWindow" 
+       class="tno-chat-window" 
+       role="dialog" 
+       aria-label="The North One AI Assistant" 
+       aria-hidden="true">
+  <!-- HUD Corner Accents (Matching Website Identity) -->
+  <div class="tno-chat-corner tl" aria-hidden="true"></div>
+  <div class="tno-chat-corner tr" aria-hidden="true"></div>
+  <div class="tno-chat-corner bl" aria-hidden="true"></div>
+  <div class="tno-chat-corner br" aria-hidden="true"></div>
+
+  <!-- Chat Header -->
+  <header class="tno-chat-header">
+    <div class="tno-header-brand-info">
+      <div class="tno-header-avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 2 L13.5 9.5 L21 11 L13.5 12.5 L12 20 L10.5 12.5 L3 11 L10.5 9.5 Z" fill="var(--gold)"/>
+        </svg>
+        <span class="tno-status-dot" title="AI Assistant Online"></span>
+      </div>
+      <div class="tno-header-titles">
+        <span class="tno-header-title">THE NORTH ONE</span>
+        <span class="tno-header-tagline">Every Brand Needs a True North.</span>
+      </div>
+    </div>
+    <div class="tno-header-actions">
+      <!-- WhatsApp Direct Contact -->
+      <a href="https://wa.me/919000099356?text=Hello%20The%20North%20One%2C%20I%20would%20like%20to%20discuss%20a%20creative%20project." 
+         target="_blank" 
+         rel="noopener noreferrer" 
+         class="tno-action-btn tno-action-whatsapp" 
+         aria-label="Connect on WhatsApp"
+         title="Direct WhatsApp chat">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.979-.276-.101-.477-.15-.678.15-.2.301-.778.979-.954 1.18-.176.2-.352.226-.653.076-.301-.15-1.272-.469-2.424-1.496-.897-.798-1.503-1.784-1.68-2.085-.175-.301-.019-.464.132-.614.136-.134.301-.351.452-.526.15-.176.2-.301.301-.502.1-.201.05-.377-.025-.527-.076-.151-.678-1.632-.93-2.235-.245-.588-.494-.509-.679-.518l-.578-.01c-.2 0-.527.076-.803.376-.276.302-1.054 1.03-1.054 2.512 0 1.482 1.08 2.914 1.23 3.115.151.201 2.125 3.245 5.148 4.552.719.311 1.28.497 1.718.636.722.229 1.379.197 1.898.119.578-.087 1.78-.727 2.03-1.43.251-.703.251-1.306.176-1.43-.075-.125-.276-.201-.577-.351z"/>
+          <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.174L2 22l4.982-1.408A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.2c-1.614 0-3.12-.472-4.398-1.285l-.315-.2-2.96.837.844-2.884-.207-.327A8.17 8.17 0 013.8 12c0-4.522 3.678-8.2 8.2-8.2s8.2 3.678 8.2 8.2-3.678 8.2-8.2 8.2z"/>
+        </svg>
+      </a>
+      <!-- Close Button -->
+      <button id="tnoChatCloseBtn" 
+              class="tno-action-btn" 
+              aria-label="Close chat window" 
+              title="Close chat"
+              type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- WhatsApp Quick Header Banner -->
+  <div class="tno-whatsapp-banner">
+    <div class="tno-whatsapp-banner-left">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.174L2 22l4.982-1.408A9.957 9.957 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18.2c-1.614 0-3.12-.472-4.398-1.285l-.315-.2-2.96.837.844-2.884-.207-.327A8.17 8.17 0 013.8 12c0-4.522 3.678-8.2 8.2-8.2s8.2 3.678 8.2 8.2-3.678 8.2-8.2 8.2z"/>
+      </svg>
+      <span>Prefer WhatsApp?</span>
+    </div>
+    <a href="https://wa.me/919000099356?text=Hello%20The%20North%20One%2C%20I%20would%20like%20to%20discuss%20a%20creative%20project." 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="tno-whatsapp-banner-link">
+      Chat with Team ↗
+    </a>
+  </div>
+
+  <!-- Messages Container -->
+  <div id="tnoChatMessages" class="tno-chat-messages" role="log" aria-live="polite">
+    <!-- Messages and suggested questions are rendered here -->
+  </div>
+
+  <!-- Input Area -->
+  <div class="tno-chat-input-area">
+    <form id="tnoChatForm" class="tno-chat-form" action="javascript:void(0);">
+      <input type="text" 
+             id="tnoChatInput" 
+             class="tno-chat-input" 
+             placeholder="Ask about our services, process, or brand..." 
+             autocomplete="off" 
+             aria-label="Ask North One AI a question">
+      <button type="submit" 
+              id="tnoChatSendBtn" 
+              class="tno-send-btn" 
+              disabled 
+              aria-label="Send message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </form>
+    <div class="tno-input-footer-meta">
+      <span>THE NORTH ONE · AI Assistant</span>
+      <a href="https://wa.me/919000099356" target="_blank" rel="noopener noreferrer">WhatsApp: +91 90000 99356</a>
+    </div>
+  </div>
+</aside>
+
+<!-- Chatbot Controller Script -->
+<script src="js/chatbot.js"></script>
 </body>
 </html>

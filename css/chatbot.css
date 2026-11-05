@@ -1,0 +1,932 @@
+/* ==========================================================================
+   THE NORTH ONE — AI Chatbot Widget Styles
+   Visual identity: Dark navy/black, warm ivory, muted gold, celestial compass
+   ========================================================================== */
+
+/* ---------- Chatbot Widget Container & Launcher ---------- */
+.tno-chatbot-launcher {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  border: 1.5px solid var(--gold);
+  color: var(--gold-bright);
+  cursor: pointer;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 18px rgba(201, 162, 75, 0.25);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease,
+              background-color 0.3s ease;
+  outline: none;
+}
+
+.tno-chatbot-launcher:hover {
+  transform: scale(1.08) translateY(-2px);
+  border-color: var(--gold-bright);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 26px rgba(201, 162, 75, 0.45);
+}
+
+.tno-chatbot-launcher:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* Subtle radar pulse effect on launcher */
+.tno-chatbot-launcher::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  opacity: 0.7;
+  animation: tnoLauncherRadar 3s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes tnoLauncherRadar {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Launcher icons */
+.tno-launcher-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.tno-launcher-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tno-launcher-icon-chat {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.tno-launcher-icon-close {
+  position: absolute;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+/* When chat is open, morph launcher icon */
+.tno-chatbot-open .tno-launcher-icon-chat {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.tno-chatbot-open .tno-launcher-icon-close {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Notification badge */
+.tno-launcher-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.tno-launcher-badge.tno-hidden {
+  opacity: 0;
+  transform: scale(0);
+  pointer-events: none;
+}
+
+/* Launcher tooltip prompt */
+.tno-launcher-tooltip {
+  position: absolute;
+  right: 74px;
+  white-space: nowrap;
+  background: var(--ink-2);
+  color: var(--parchment);
+  border: 1px solid var(--line-strong);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateX(10px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.tno-launcher-tooltip::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--ink-2);
+  border-right: 1px solid var(--line-strong);
+  border-top: 1px solid var(--line-strong);
+}
+
+.tno-chatbot-launcher:hover .tno-launcher-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tno-chatbot-open .tno-launcher-tooltip {
+  display: none;
+}
+
+/* ---------- Chat Window ---------- */
+.tno-chat-window {
+  position: fixed;
+  bottom: 96px;
+  right: 28px;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  height: 600px;
+  max-height: min(600px, calc(100vh - 116px));
+  background: var(--ink-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65),
+              0 0 0 1px rgba(201, 162, 75, 0.16),
+              0 0 32px rgba(201, 162, 75, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 998;
+  opacity: 0;
+  transform: translateY(22px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.35s;
+  visibility: hidden;
+  backdrop-filter: blur(16px);
+}
+
+.tno-chat-window.tno-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* Corner HUD brackets like the existing website work cards */
+.tno-chat-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--gold);
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 5;
+}
+.tno-chat-corner.tl { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+.tno-chat-corner.tr { top: 8px; right: 8px; border-left: 0; border-bottom: 0; }
+.tno-chat-corner.bl { bottom: 8px; left: 8px; border-right: 0; border-top: 0; }
+.tno-chat-corner.br { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+
+/* Subtle gold top line accent */
+.tno-chat-window::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  z-index: 6;
+}
+
+/* ---------- Chat Header ---------- */
+.tno-chat-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(180deg, rgba(201, 162, 75, 0.08) 0%, rgba(16, 20, 31, 0.4) 100%), var(--ink-2);
+  border-bottom: 1px solid var(--line);
+  z-index: 2;
+  gap: 12px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tno-header-brand-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tno-header-avatar {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(201, 162, 75, 0.2);
+}
+
+.tno-header-avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Pulsing online status dot */
+.tno-status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid var(--ink-2);
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+}
+
+.tno-header-titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tno-header-title {
+  font-family: 'Fraunces', serif;
+  font-size: 0.96rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--parchment);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+}
+
+.tno-header-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tno-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tno-action-btn {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--parchment-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  outline: none;
+  text-decoration: none;
+}
+
+.tno-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tno-action-btn:hover {
+  color: var(--gold-bright);
+  border-color: var(--gold);
+  background: rgba(201, 162, 75, 0.12);
+  transform: scale(1.05);
+}
+
+.tno-action-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* WhatsApp direct header button specific highlight */
+.tno-action-whatsapp {
+  color: #25d366;
+  border-color: rgba(37, 211, 102, 0.35);
+}
+
+.tno-action-whatsapp:hover {
+  color: #25d366;
+  border-color: #25d366;
+  background: rgba(37, 211, 102, 0.12);
+}
+
+/* ---------- WhatsApp Quick Connect Bar ---------- */
+.tno-whatsapp-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(37, 211, 102, 0.08);
+  border-bottom: 1px solid rgba(37, 211, 102, 0.2);
+  font-size: 0.76rem;
+  color: var(--parchment);
+  font-family: 'Inter', sans-serif;
+  gap: 10px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tno-whatsapp-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--parchment-dim);
+}
+
+.tno-whatsapp-banner-left svg {
+  width: 14px;
+  height: 14px;
+  color: #25d366;
+  flex-shrink: 0;
+}
+
+.tno-whatsapp-banner-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: #25d366;
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.tno-whatsapp-banner-link:hover {
+  color: #48e280;
+  transform: translateX(2px);
+}
+
+/* ---------- Messages Body ---------- */
+.tno-chat-messages {
+  flex: 1 1 0px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Custom scrollbar matching dark/light aesthetics */
+.tno-chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+.tno-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tno-chat-messages::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+.tno-chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* Individual message row */
+.tno-msg-row {
+  display: flex;
+  gap: 10px;
+  max-width: 92%;
+  box-sizing: border-box;
+  animation: tnoMsgIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes tnoMsgIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tno-msg-bot {
+  align-self: flex-start;
+}
+
+.tno-msg-user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+/* Message Avatar */
+.tno-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tno-msg-avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Message Bubble */
+.tno-msg-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tno-msg-bubble {
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  border-radius: 14px;
+  word-break: normal;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.tno-msg-bot .tno-msg-bubble {
+  background: var(--ink-3);
+  color: var(--parchment);
+  border: 1px solid var(--line);
+  border-top-left-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tno-msg-user .tno-msg-bubble {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%);
+  color: #0a0d14;
+  font-weight: 500;
+  border-top-right-radius: 4px;
+  box-shadow: 0 4px 14px rgba(201, 162, 75, 0.28);
+}
+
+.tno-msg-bubble a {
+  color: var(--gold-bright);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.tno-msg-bubble a:hover {
+  color: #ffffff;
+}
+
+.tno-msg-user .tno-msg-bubble a {
+  color: #0a0d14;
+  text-decoration: underline;
+}
+
+.tno-msg-bubble strong {
+  font-weight: 600;
+  color: var(--gold-bright);
+}
+
+.tno-msg-user .tno-msg-bubble strong {
+  color: #0a0d14;
+}
+
+.tno-msg-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+.tno-msg-user .tno-msg-time {
+  text-align: right;
+}
+
+/* ---------- Suggested Questions Group ---------- */
+.tno-suggestions-group {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  animation: tnoMsgIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.tno-suggestions-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tno-suggestions-label::before {
+  content: "✦";
+  font-size: 0.65rem;
+}
+
+.tno-suggest-btn {
+  background: rgba(201, 162, 75, 0.06);
+  border: 1px solid rgba(201, 162, 75, 0.24);
+  color: var(--parchment);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.81rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.tno-suggest-btn span.tno-arrow {
+  color: var(--gold);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease;
+}
+
+.tno-suggest-btn:hover {
+  background: rgba(201, 162, 75, 0.16);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  transform: translateX(3px);
+}
+
+.tno-suggest-btn:hover span.tno-arrow {
+  transform: translateX(3px);
+}
+
+.tno-suggest-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Compact Inline Contact CTA (Visually secondary, subtle green accent) */
+.tno-contact-cta-wrapper {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.tno-contact-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: rgba(37, 211, 102, 0.06);
+  border: 1px solid rgba(37, 211, 102, 0.28);
+  border-radius: 6px;
+  color: var(--parchment);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.77rem;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.tno-contact-cta-icon {
+  width: 14px;
+  height: 14px;
+  color: #25d366;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.tno-contact-cta-btn:hover {
+  background: rgba(37, 211, 102, 0.14);
+  border-color: #25d366;
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+.tno-contact-cta-btn:hover .tno-contact-cta-icon {
+  transform: scale(1.1);
+}
+
+.tno-contact-cta-btn:focus-visible {
+  outline: 2px solid #25d366;
+  outline-offset: 2px;
+}
+
+.tno-inline-code {
+  background: rgba(201, 162, 75, 0.12);
+  color: var(--gold-bright);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(201, 162, 75, 0.2);
+}
+
+/* ---------- Typing Indicator ---------- */
+.tno-typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 16px;
+  background: var(--ink-3);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  border-top-left-radius: 4px;
+  width: fit-content;
+}
+
+.tno-typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.4;
+  animation: tnoDotBounce 1.4s infinite ease-in-out both;
+}
+
+.tno-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.tno-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.tno-typing-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes tnoDotBounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
+    background: var(--gold-bright);
+  }
+}
+
+/* ---------- Chat Input Area ---------- */
+.tno-chat-input-area {
+  padding: 14px 16px 12px;
+  background: var(--ink-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: auto;
+  position: relative;
+  z-index: 4;
+}
+
+.tno-chat-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.tno-chat-input {
+  flex: 1;
+  background: var(--ink);
+  color: var(--parchment);
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  padding: 11px 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.tno-chat-input::placeholder {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.tno-chat-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(201, 162, 75, 0.22);
+}
+
+.tno-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--btn-primary-text);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.25s ease,
+              box-shadow 0.25s ease,
+              opacity 0.2s ease;
+  outline: none;
+}
+
+.tno-send-btn svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.2s ease;
+}
+
+.tno-send-btn:hover:not(:disabled) {
+  background: var(--gold-bright);
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(201, 162, 75, 0.4);
+}
+
+.tno-send-btn:hover:not(:disabled) svg {
+  transform: translateX(1px);
+}
+
+.tno-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tno-send-btn:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Chat Input Footer Metadata */
+.tno-input-footer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  padding: 0 4px;
+}
+
+.tno-input-footer-meta a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.tno-input-footer-meta a:hover {
+  color: var(--gold-bright);
+  text-decoration: underline;
+}
+
+/* ---------- Mobile & Responsive Styles ---------- */
+@media (max-width: 480px) {
+  /* Hide the floating launcher when chat is open so it never obstructs inputs or buttons */
+  .tno-chatbot-open .tno-chatbot-launcher {
+    display: none !important;
+  }
+
+  .tno-chatbot-launcher {
+    bottom: 20px;
+    right: 20px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .tno-launcher-tooltip {
+    display: none;
+  }
+
+  .tno-chat-window {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 100%;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    transform: translateY(100%);
+  }
+
+  .tno-chat-window.tno-active {
+    transform: translateY(0);
+  }
+
+  .tno-chat-corner {
+    display: none;
+  }
+
+  .tno-chat-header {
+    padding: 14px 16px;
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
+  .tno-action-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tno-msg-row {
+    max-width: 100%;
+  }
+
+  .tno-chat-input-area {
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .tno-chatbot-launcher,
+  .tno-chatbot-launcher::before,
+  .tno-chat-window,
+  .tno-msg-row,
+  .tno-suggestions-group,
+  .tno-typing-dot {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

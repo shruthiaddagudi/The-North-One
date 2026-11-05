@@ -1,0 +1,22 @@
+{
+  "name": "the-north-one-agency",
+  "version": "1.0.0",
+  "description": "THE NORTH ONE — Creative and Digital Growth Agency Website & AI Chatbot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "creative-agency",
+    "the-north-one",
+    "ai-chatbot",
+    "gemini",
+    "google-genai"
+  ],
+  "author": "The North One",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.32.0"
+  }
+}
