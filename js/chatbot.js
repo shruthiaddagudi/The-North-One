@@ -126,15 +126,56 @@
           data = null;
         }
 
-        if (response.ok && data && data.success) {
+        // Helper to extract clean string text from any response format
+        function extractPayloadText(payload) {
+          if (!payload) return '';
+          if (typeof payload === 'string') return payload.trim();
+          if (typeof payload === 'object') {
+            // 1. Check direct 'reply' property (string or nested object)
+            if (typeof payload.reply === 'string') return payload.reply.trim();
+            if (payload.reply && typeof payload.reply === 'object') {
+              return extractPayloadText(payload.reply);
+            }
+            // 2. Check 'message' or 'text' properties
+            if (typeof payload.message === 'string') return payload.message.trim();
+            if (typeof payload.text === 'string') return payload.text.trim();
+            // 3. Check 'error' property (handles Vercel's {"error": {"code": "404", "message": "..."}})
+            if (typeof payload.error === 'string') return payload.error.trim();
+            if (payload.error && typeof payload.error === 'object') {
+              if (typeof payload.error.message === 'string') return payload.error.message.trim();
+              if (typeof payload.error.text === 'string') return payload.error.text.trim();
+              return JSON.stringify(payload.error);
+            }
+          }
+          return '';
+        }
+
+        const hasValidReply = Boolean(
+          data && (
+            typeof data.reply === 'string' ||
+            (data.reply && typeof data.reply === 'object') ||
+            typeof data.message === 'string' ||
+            typeof data.text === 'string' ||
+            data.success === true ||
+            typeof data === 'string'
+          )
+        );
+
+        if (response.ok && hasValidReply && data?.success !== false) {
+          const replyText = extractPayloadText(data) || "I'm here to help navigate your brand. What would you like to explore?";
+          const showCTA = Boolean(
+            data.showContactCTA !== undefined
+              ? data.showContactCTA
+              : (data.showContact !== undefined ? data.showContact : data.showWhatsAppCard)
+          );
           return {
             connected: true,
             success: true,
-            reply: data.reply || "I'm here to help navigate your brand. What would you like to explore?",
-            showContactCTA: Boolean(data.showContactCTA !== undefined ? data.showContactCTA : data.showWhatsAppCard)
+            reply: replyText,
+            showContactCTA: showCTA
           };
         } else {
-          const fallbackReply = data?.reply || data?.error || `Unable to complete request (${response.status}). Please contact our team on WhatsApp.`;
+          const fallbackReply = extractPayloadText(data) || `Unable to complete request (${response.status}). Please contact our team on WhatsApp.`;
           return {
             connected: true,
             success: false,
@@ -175,12 +216,16 @@
   }
 
   /**
-   * Safe HTML Escaping
+   * Safe HTML Escaping with object-to-string protection
    */
   function escapeHTML(str) {
-    if (!str) return '';
+    if (!str && str !== 0) return '';
+    let val = str;
+    if (typeof val === 'object' && val !== null) {
+      val = val.reply || val.message || val.text || val.error?.message || val.error || JSON.stringify(val);
+    }
     const div = document.createElement('div');
-    div.textContent = str;
+    div.textContent = String(val ?? '');
     return div.innerHTML;
   }
 
@@ -188,9 +233,13 @@
    * Format Markdown links, bold, and line breaks safely
    */
   function formatMessageContent(rawText) {
-    if (!rawText) return '';
+    if (!rawText && rawText !== 0) return '';
+    let text = rawText;
+    if (typeof text === 'object' && text !== null) {
+      text = text.reply || text.message || text.text || text.error?.message || text.error || JSON.stringify(text);
+    }
 
-    let safe = escapeHTML(rawText);
+    let safe = escapeHTML(text);
 
     // 1. Format markdown links: [link text](url)
     safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+|mailto:[^\s\)]+|tel:[^\s\)]+)\)/g, (match, text, url) => {
