@@ -42,6 +42,44 @@ function loadEnv() {
 }
 loadEnv();
 
+function getGeminiApiKey() {
+  loadEnv();
+  // 1. Direct standard environment variable
+  let key = (process.env.GEMINI_API_KEY || '').trim();
+
+  // 2. Common alternatives
+  if (!key) {
+    key = (process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_GENAI_API_KEY || '').trim();
+  }
+
+  // 3. Fallback: Check if user accidentally pasted API key into GEMINI_MODEL
+  const modelVal = (process.env.GEMINI_MODEL || '').trim();
+  if (!key && (modelVal.startsWith('AQ.') || modelVal.startsWith('AIza') || modelVal.length > 30)) {
+    console.warn('[CONFIG] Detected Gemini API key in GEMINI_MODEL environment variable. Auto-resolving as API key.');
+    key = modelVal;
+  }
+
+  return key;
+}
+
+function getGeminiModel() {
+  loadEnv();
+  let modelVal = (process.env.GEMINI_MODEL || '').trim();
+
+  // If GEMINI_MODEL was set to an API key, fallback to default model
+  if (modelVal.startsWith('AQ.') || modelVal.startsWith('AIza') || modelVal.length > 30) {
+    modelVal = '';
+  }
+
+  // If GEMINI_API_KEY was accidentally set to a model name (e.g. 'gemini-3.5-flash')
+  const keyVal = (process.env.GEMINI_API_KEY || '').trim();
+  if (keyVal.startsWith('gemini-') || keyVal.includes('flash')) {
+    modelVal = keyVal;
+  }
+
+  return modelVal || 'gemini-3.5-flash';
+}
+
 const NORTH_ONE_SYSTEM_INSTRUCTIONS = `
 You are the AI assistant for THE NORTH ONE, a full-service creative agency and digital growth studio for developing cities.
 
@@ -227,7 +265,7 @@ function buildGeminiContents(userMessage, conversationHistory = []) {
 }
 
 async function callGeminiSingleAttempt(contents, modelName, timeoutMs = 15000) {
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = getGeminiApiKey();
   if (!apiKey) {
     const err = new Error('GEMINI_API_KEY_MISSING');
     err.status = 401;
@@ -271,16 +309,19 @@ async function callGeminiSingleAttempt(contents, modelName, timeoutMs = 15000) {
 
 async function callGeminiWithRetry(userMessage, conversationHistory = []) {
   const contents = buildGeminiContents(userMessage, conversationHistory);
-  const configured = (process.env.GEMINI_MODEL || 'gemini-3.5-flash').trim();
+  const configured = getGeminiModel();
   const candidateModels = Array.from(new Set([configured, 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'].filter(Boolean)));
   const MAX_503_RETRIES = 2;
   const BACKOFF_DELAYS = [1000, 2000];
+
+  console.log("Calling Gemini API...");
 
   let lastError = null;
   for (const model of candidateModels) {
     for (let attempt = 0; attempt <= MAX_503_RETRIES; attempt++) {
       try {
         const replyText = await callGeminiSingleAttempt(contents, model, 15000);
+        console.log("Gemini API succeeded");
         return replyText;
       } catch (err) {
         lastError = err;
@@ -339,7 +380,11 @@ module.exports = async function handler(req, res) {
 
   const userMessage = ((payload && payload.message) || '').trim();
   const conversationHistory = Array.isArray(payload && payload.history) ? payload.history : [];
-  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey = getGeminiApiKey();
+  const modelName = getGeminiModel();
+
+  console.log("GEMINI_API_KEY configured:", Boolean(apiKey && apiKey.length > 5));
+  console.log("GEMINI_MODEL:", modelName);
 
   if (!userMessage) {
     res.writeHead ? res.writeHead(400, { 'Content-Type': 'application/json' }) : (res.status && res.status(400));
@@ -390,12 +435,14 @@ module.exports = async function handler(req, res) {
         showContactCTA = false;
       }
     } catch (geminiError) {
+      console.error(`[AI PIPELINE] Gemini call failed: ${geminiError.message}. Using FAQ fallback.`);
       const fallbackResult = queryKnowledgeBase(userMessage);
       aiReply = fallbackResult.answer;
       responseSource = fallbackResult.matched ? 'faq_fallback' : 'faq_unanswered';
       showContactCTA = Boolean(fallbackResult.showContactCTA);
     }
   } else {
+    console.error("[SERVER ERROR] GEMINI_API_KEY is missing or invalid. Check Vercel environment variables.");
     const fallbackResult = queryKnowledgeBase(userMessage);
     aiReply = fallbackResult.answer;
     responseSource = fallbackResult.matched ? 'faq_local' : 'faq_unanswered';
